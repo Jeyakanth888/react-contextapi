@@ -1,28 +1,42 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
+import { AppProvider, AppConsumer } from './context';
+import TopHeader from './components/header';
+import SideNav from './components/sidenav';
+//const inboxMails = require('./jsons/inbox.json');
+//const spamMails = require('./jsons/spam.json');
 
 class App extends Component {
+  /* state = {
+     selected: 'inbox', inboxTotalMails: 0, inboxUnreadMailsCount: 0, spamUnreadMailsCount: 0,
+     inbox: inboxMails, spam: spamMails, deleted: [], sent: []
+   };*/
   render() {
     return (
       <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
+        <AppProvider >
+          <Header />
+        </AppProvider>
+        <div className="container-fluid">
+          <div className="row">
+            <AppConsumer>
+              {context => {
+                return (
+                  <SideNav values={context} />
+                )
+              }}
+            </AppConsumer>
+          </div>
+        </div>
       </div>
     );
   }
 }
+
+
+const Header = () => {
+  return (<TopHeader />)
+}
+
 
 export default App;
