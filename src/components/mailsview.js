@@ -4,12 +4,13 @@ import EmptyMail from '../components/emptymail';
 import ViewMail from '../components/viewmail';
 import { AppConsumer } from '../context'
 import { createBrowserHistory } from "history";
+import classnames from 'classnames';
 const history = createBrowserHistory();
+
 
 class AllMails extends React.Component {
 
     constructor(props) {
-        console.log(props);
         super(props);
         this.state = { paths: [], loadMailType: this.props.selected, hover: true };
         this.otherRef = this.focusedRef = this.mailsRef = React.createRef();
@@ -24,11 +25,12 @@ class AllMails extends React.Component {
         const getMails = mailStates[loadMailType];
 
         return getMails.map((mail, i) => {
+            const classes = mail.unread ? classnames('mails', 'read') : classnames('mails', 'unread');
             const pathUrl = loadMailType;
             this.state.paths.push(pathUrl);
             const mailContent = mail.content.slice(0, 50).replace(/<\/?[^>]+(>|$)/g, "");
             const setRowId = loadMailType + '_' + i;
-            return (<li key={i} id={setRowId} onMouseOver={() => { this.handleOnHoverIn(setRowId) }} onMouseOut={() => { this.handleOnHoverOut(setRowId) }}> <Link to={{ pathname: pathUrl, replace: true, search: '?mId=' + mail.mId }} >
+            return (<li className={classes} key={i} id={setRowId} onMouseOver={() => { this.handleOnHoverIn(setRowId) }} onMouseOut={() => { this.handleOnHoverOut(setRowId) }}> <Link to={{ pathname: pathUrl, replace: true, search: '?mId=' + mail.mId }} >
                 <h5 className="mail-from">Outlook Team</h5>
                 <p className="mail-subject">{mail.subject}</p>
                 <p className="mail-content">{mailContent}</p>
@@ -63,8 +65,12 @@ class AllMails extends React.Component {
             mailData['type'] = mailType;
             const getMails = this.props.mailStates[mailType];
             const getMailIndex = getMails.map(function (o) { return o.mId; }).indexOf(mailData.mId);
-
-            this.props.mailStates[mailType] = getMails.splice(getMailIndex - 1, getMailIndex) ;
+            const readStatus = getMails[getMailIndex].unread;
+            if (readStatus) {
+                this.props.mailStates.inboxUnreadMailsCount = mailType === 'inbox' ? this.props.mailStates.inboxUnreadMailsCount - 1 : this.props.mailStates.inboxUnreadMailsCount;
+                this.props.mailStates.spamUnreadMailsCount = mailType === 'spam' ? this.props.mailStates.spamUnreadMailsCount - 1 : this.props.mailStates.spamUnreadMailsCount;
+            }
+            this.props.mailStates[mailType] = getMails.splice(getMailIndex - 1, getMailIndex);
             const frozenObj = Object.freeze(mailData);
             this.props.mailStates.deleted = Object.freeze(deletedMails.concat(frozenObj));
             this.renderMails(this.props.mailStates);

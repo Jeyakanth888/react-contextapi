@@ -35,18 +35,18 @@ class SideNav extends React.Component {
                                         <p className="sent-mail-btn" onClick={() => this.setState({ showModal: true })}><i className="fa fa-envelope-o" aria-hidden="true"></i> New Mail</p>
                                         <p><i className="fa fa-arrow-up" aria-hidden="true"></i> Folders</p>
                                         <ul>
-                                            <li><Link to={'inbox'}>Inbox {this.countComponentRender(context.inboxUnreadMailsCount)}</Link></li>
-                                            <li><Link to={'sent'}>Sent Items  {this.countComponentRender(context.sent.length)}</Link></li>
-                                            <li><Link to={'spam'}>Spam {this.countComponentRender(context.spamUnreadMailsCount)}</Link></li>
-                                            <li><Link to={'deleted'}>Deleted {this.countComponentRender(context.deleted.length)}</Link></li>
+                                            <li><Link to={'inbox'}>Inbox {this.countComponentRender(this.props.values.inboxUnreadMailsCount)}</Link></li>
+                                            <li><Link to={'sent'}>Sent Items  {this.countComponentRender(this.props.values.sent.length)}</Link></li>
+                                            <li><Link to={'spam'}>Spam {this.countComponentRender(this.props.values.spamUnreadMailsCount)}</Link></li>
+                                            <li><Link to={'deleted'}>Deleted {this.countComponentRender(this.props.values.deleted.length)}</Link></li>
                                         </ul>
                                     </div>
                                 </div>
-                                <Route exact path="/" component={() => <AllMails mailStates={context} selected="inbox" />} />
-                                <Route path={`/inbox`} component={() => <AllMails mailStates={context} selected="inbox" />} />
-                                <Route path={`/spam`} component={() => <AllMails mailStates={context} selected="spam" />} />
-                                <Route path={`/sent`} component={() => <AllMails mailStates={context} selected="sent" />} />
-                                <Route path={`/deleted`} component={() => <AllMails mailStates={context} selected="deleted" />} />
+                                <Route exact path="/" component={() => <AllMails mailStates={this.props.values} selected="inbox" />} />
+                                <Route path={`/inbox`} component={() => <AllMails mailStates={this.props.values} selected="inbox" />} />
+                                <Route path={`/spam`} component={() => <AllMails mailStates={this.props.values} selected="spam" />} />
+                                <Route path={`/sent`} component={() => <AllMails mailStates={this.props.values} selected="sent" />} />
+                                <Route path={`/deleted`} component={() => <AllMails mailStates={this.props.values} selected="deleted" />} />
                             </React.Fragment>
                         )
                     }}
