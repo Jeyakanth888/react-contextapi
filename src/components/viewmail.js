@@ -5,6 +5,10 @@ import { AppConsumer } from '../context'
 
 class ViewMail extends React.Component {
 
+    componentDidMount = () => {
+
+    }
+    
     renderMailView(mailStates) {
         const URL = window.location.href;
         const arr = URL.split('/');
