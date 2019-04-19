@@ -13,26 +13,36 @@ class AllMails extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = { paths: [], loadMailType: this.props.selected, hover: true, mailStates: this.props.mailStates };
+        let mailStates;
+        if (localStorage.getItem('mailStates')) {
+            mailStates = JSON.parse(localStorage.getItem('mailStates'));
+        } else {
+            mailStates = this.props.mailStates;
+            localStorage.setItem('mailStates', JSON.stringify(mailStates));
+        }
+        this.state = { paths: [], loadMailType: this.props.selected, hover: true, mailStates: mailStates };
         this.otherRef = this.focusedRef = this.mailsRef = React.createRef();
     }
 
     componentWillReceiveProps = (nextProps) => {
-        console.log(nextProps);
+
         this.setState({ loadMailType: nextProps.selected });
     }
 
     shouldComponentUpdate(nextProps, nextState) {
+
         return this.state.mailStates !== nextState.tempMailStates;
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        this.setState({ mailStates: prevState.tempMailStates });
-        console.log(this.state.mailStates);
+        if (prevState.tempMailStates !== undefined) {
+            localStorage.setItem('mailStates', JSON.stringify(prevState.tempMailStates));
+            this.setState({ mailStates: prevState.tempMailStates });
+        }
     }
 
     componentDidMount() {
-        console.log(this.state.mailStates);
+
     }
 
     renderMails = (mailStates) => {
@@ -42,7 +52,7 @@ class AllMails extends React.Component {
 
             const getMails = mailStates[loadMailType];
             return getMails.map((mail, i) => {
-                const classes = mail.unread ? classnames('mails', 'read') : classnames('mails', 'unread');
+                const classes = mail.unread ? classnames('mails', 'unread') : classnames('mails', 'read');
                 const pathUrl = loadMailType;
                 this.state.paths.push(pathUrl);
                 const mailContent = mail.content.slice(0, 50).replace(/<\/?[^>]+(>|$)/g, "");
@@ -52,15 +62,22 @@ class AllMails extends React.Component {
                     <h5 className="mail-from">Outlook Team</h5>
                     <p className="mail-subject">{mail.subject}</p>
                     <p className="mail-content">{mailContent}</p>
-                </Link > {this.renderDeleteIcon(loadMailType, i, setRowId)}<div className='tooltip' >{mailContent}</div></li>
+                </Link > {this.renderDeleteFlagIcon(loadMailType, i, mail.mId)}<div className='tooltip' >{mailContent}</div></li>
                 );
             });
         }
     }
 
-    renderDeleteIcon = (loadMailType, i, setRowId) => {
+    renderDeleteFlagIcon = (loadMailType, i, mailId) => {
+
+        const flagMailAvail = this.checkFlagMailAvail(loadMailType, mailId);
+        const classes = flagMailAvail ? classnames('flag-icon', 'flag-added') : classnames('flag-icon', '');
+
         if (loadMailType !== 'deleted')
-            return <span className='delete-icon' onClick={() => this.handleDeleteMail(loadMailType, i)} ><i className="fa fa-trash" aria-hidden="true"></i></span>
+            return <div>
+                <span className={classes} onClick={() => this.handleFlagMail(loadMailType, mailId)} ><i className="fa fa-flag" aria-hidden="true"></i> </span>
+                <span className='delete-icon' onClick={() => this.handleDeleteMail(loadMailType, i)} ><i className="fa fa-trash" aria-hidden="true"></i></span>
+            </div>
     }
 
     handleOnHoverIn = (rowId) => {
@@ -72,8 +89,38 @@ class AllMails extends React.Component {
         //  this.setState({ hover: false });
     }
 
-    handleDeleteMail = (mailType, rowIndex) => {
+    checkFlagMailAvail = (mailType, mailId) => {
+        const flagedMails = this.state.mailStates.flaged;
+        const typeflagedMails = flagedMails.filter(mail => mail['type'] === mailType && mail['mId'] === mailId);
+        return typeflagedMails.length > 0;
+    }
 
+    handleFlagMail = (mailType, mailId) => {
+
+        const flagedMails = this.state.mailStates.flaged;
+        const flagMailAvail = this.checkFlagMailAvail(mailType, mailId);
+        let tempMailStates = Object.assign({}, this.state.mailStates);
+
+        if (!flagMailAvail) {
+            const newFlagMailObj = { type: mailType, mId: mailId };
+            tempMailStates.flaged = Object.freeze(flagedMails.concat(newFlagMailObj));
+
+        } else {
+            const getFlagedMail = flagedMails.filter(mail => mail['type'] === mailType && mail['mId'] === mailId);
+            const flagedMail = getFlagedMail[0];
+            let newFMailsArr = [];
+            getFlagedMail.map((mail) => {
+                if (mail.mid !== flagedMail.mId && mail.type !== flagedMail.type) {
+                    newFMailsArr.push(mail);
+                }
+            });
+            tempMailStates.flaged = newFMailsArr;
+        }
+        this.setState({ tempMailStates });
+
+    }
+
+    handleDeleteMail = (mailType, rowIndex) => {
         const mailData = this.state.mailStates[mailType][rowIndex];
         this.callApiDeleteMailAction(mailType, mailData);
     }
@@ -88,15 +135,16 @@ class AllMails extends React.Component {
             const readStatus = getMails[getMailIndex].unread;
             let tempMailStates = Object.assign({}, this.state.mailStates);
             if (!readStatus) {
-
                 tempMailStates.inboxUnreadMailsCount = mailType === 'inbox' ? tempMailStates.inboxUnreadMailsCount - 1 : tempMailStates.inboxUnreadMailsCount;
                 tempMailStates.spamUnreadMailsCount = mailType === 'spam' ? tempMailStates.spamUnreadMailsCount - 1 : tempMailStates.spamUnreadMailsCount;
             }
-
             tempMailStates[mailType] = getMails.slice(0, getMailIndex).concat(getMails.slice(getMailIndex + 1, getMails.length))
             const frozenObj = Object.freeze(mailData);
             tempMailStates.deleted = Object.freeze(deletedMails.concat(frozenObj));
             this.setState({ tempMailStates });
+            const getDeletedCount = document.getElementById('deleted-count').innerText;
+            const count = parseInt(getDeletedCount) + 1;
+            document.getElementById('deleted-count').innerText = count;
         }
         /*  const response = await fetch('/api/deleteMail',
               {
@@ -119,12 +167,9 @@ class AllMails extends React.Component {
         // const hoverState = this.state.hover;
         allLi.forEach((element) => {
             const findLiId = element.getAttribute('id');
-            element.classList.add(findLiId === rowId ? 'tooltip-on-hover' : 'hoverout');
-            if (findLiId === rowId) {
-                element.classList.add('hover-li');
-            } else {
-                element.classList.remove('hover-li');
-            }
+            element.classList.remove('hover-li');
+            element.classList.remove('hoverout');
+            element.classList.add(findLiId === rowId ? 'hover-li' : 'hoverout');
         });
     }
 

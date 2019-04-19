@@ -241,26 +241,38 @@
   opacity:0.75;
   color:#fff;
   z-index:10;
-  margin-top:-120px;
+  margin-top:-15px;
   width:300px;
   height:60px;
   position:absolute;
   text-align:center;
 
  }
-.tooltip-on-hover:hover .tooltip { visibility: visible;   }
+.hover-li:hover .tooltip { visibility: visible;   }
 
-span.delete-icon {
-  color:#dc2e2ed4;
+span.delete-icon,span.flag-icon {
   font-size:17px;
   text-align: right;
     float: right;
-    margin-top: -44px;
     margin-right: 4px;
     visibility: hidden; 
 }
 
-li.hover-li span.delete-icon {
+span.delete-icon {
+  color:#dc2e2ed4;
+  margin-top: -44px;
+}
+
+span.flag-icon {
+  margin-top: -88px;
+}
+
+span.flag-icon.flag-added {
+  color:#f35a13d4;
+  visibility: visible; 
+}
+
+li.hover-li span.delete-icon, li.hover-li span.flag-icon {
   visibility: visible; 
 }
 

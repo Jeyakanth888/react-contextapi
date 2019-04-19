@@ -11,17 +11,28 @@ const history = createBrowserHistory();
 class SideNav extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { showModal: false,values:this.props.values };
+        let mailStates ;
+        if (localStorage.getItem('mailStates')) {
+            mailStates = JSON.parse(localStorage.getItem('mailStates'));
+            if(mailStates===undefined) {
+                mailStates  = this.props.values;
+            }
+        } else {
+            mailStates  = this.props.values;
+            localStorage.setItem('mailStates', JSON.stringify(mailStates));
+        }
+       
+        this.state = { showModal: false, values: mailStates };
     }
 
-    countComponentRender = (countNo) => {
-        return countNo !== 0 ? <span className="mails-count">  {countNo} </span> : '';
+    countComponentRender = (countNo,type) => {
+        return countNo !== 0 ? <span className="mails-count" id= {type}>  {countNo} </span> : '';
     }
-    
-    componentDidUpdate(prevProps, prevState) { 
+
+    componentDidUpdate(prevProps, prevState) {
         console.log(prevProps);
     }
-    
+
     render() {
         return (
             <Router history={history}>
@@ -35,10 +46,10 @@ class SideNav extends React.Component {
                                         <p className="sent-mail-btn" onClick={() => this.setState({ showModal: true })}><i className="fa fa-envelope-o" aria-hidden="true"></i> New Mail</p>
                                         <p><i className="fa fa-arrow-up" aria-hidden="true"></i> Folders</p>
                                         <ul>
-                                            <li><Link to={'inbox'}>Inbox {this.countComponentRender(this.state.values.inboxUnreadMailsCount)}</Link></li>
-                                            <li><Link to={'sent'}>Sent Items  {this.countComponentRender(this.state.values.sent.length)}</Link></li>
-                                            <li><Link to={'spam'}>Spam {this.countComponentRender(this.state.values.spamUnreadMailsCount)}</Link></li>
-                                            <li><Link to={'deleted'}>Deleted {this.countComponentRender(this.state.values.deleted.length)}</Link></li>
+                                            <li><Link to={'inbox'}>Inbox {this.countComponentRender(this.state.values.inboxUnreadMailsCount, 'inbox-count')}</Link></li>
+                                            <li><Link to={'sent'}>Sent Items  {this.countComponentRender(this.state.values.sent.length, 'sent-count')}</Link></li>
+                                            <li><Link to={'spam'}>Spam {this.countComponentRender(this.state.values.spamUnreadMailsCount, 'spam-count')}</Link></li>
+                                            <li><Link to={'deleted'}>Deleted {this.countComponentRender(this.state.values.deleted.length, 'deleted-count')}</Link></li>
                                         </ul>
                                     </div>
                                 </div>
