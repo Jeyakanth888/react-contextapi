@@ -137,14 +137,16 @@ class AllMails extends React.Component {
             if (!readStatus) {
                 tempMailStates.inboxUnreadMailsCount = mailType === 'inbox' ? tempMailStates.inboxUnreadMailsCount - 1 : tempMailStates.inboxUnreadMailsCount;
                 tempMailStates.spamUnreadMailsCount = mailType === 'spam' ? tempMailStates.spamUnreadMailsCount - 1 : tempMailStates.spamUnreadMailsCount;
+                mailType ==='inbox' ?  document.getElementById('inbox-count').innerText = tempMailStates.inboxUnreadMailsCount - 1 : document.getElementById('spam-count').innerText = tempMailStates.spamUnreadMailsCount - 1;
             }
             tempMailStates[mailType] = getMails.slice(0, getMailIndex).concat(getMails.slice(getMailIndex + 1, getMails.length))
             const frozenObj = Object.freeze(mailData);
             tempMailStates.deleted = Object.freeze(deletedMails.concat(frozenObj));
-            this.setState({ tempMailStates });
             const getDeletedCount = document.getElementById('deleted-count').innerText;
             const count = parseInt(getDeletedCount) + 1;
             document.getElementById('deleted-count').innerText = count;
+            this.setState({ tempMailStates });
+          
         }
         /*  const response = await fetch('/api/deleteMail',
               {
